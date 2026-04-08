@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: irocoro
+    runtime: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn project.wsgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.0"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: irocoro-db
+          property: connectionString
+      - key: ALLOWED_HOSTS
+        value: "irocoro.onrender.com"        # ← デプロイ後に実際のドメインに変更
+      - key: CSRF_TRUSTED_ORIGINS
+        value: "https://irocoro.onrender.com" # ← デプロイ後に実際のドメインに変更
+
+databases:
+  - name: irocoro-db
+    databaseName: irocoro_db
+    plan: free
