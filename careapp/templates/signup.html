@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}irocoro | signup{% endblock title %}
+
+{% block contents %}
+<main class="login"> <div class="login-card"> <h2 class="login-title">新規登録</h2> <form method="post" class="login-form"> {% csrf_token %}
+      {{ form.non_field_errors }}
+
+      {{ form.as_p }}
+
+      <button type="submit" class="submit-btn">登録</button>
+    </form>
+
+    <div class="auth-links">
+      <p>すでにアカウントをお持ちの方は
+        <a href="{% url 'careapp:login' %}">ログイン</a>へ
+      </p>
+    </div>
+  </div>
+</main>
+{% endblock %}
+
+{% comment %} {% extends "base.html" %}
+{% block title %}irocoro | signup{% endblock title %}
+{% block contents %}
+<h2>アカウント作成</h2>
+
+<h1>サインアップ</h1>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+
+  <div>
+    {{ form.username.label_tag }}
+    {{ form.username }}
+    {{ form.username.errors }}
+  </div>
+
+  <div>
+    {{ form.password1.label_tag }}
+    {{ form.password1 }}
+    {{ form.password1.errors }}
+  </div>
+
+  <div>
+    {{ form.password2.label_tag }}
+    {{ form.password2 }}
+    {{ form.password2.errors }}
+  </div>
+
+  <button type="submit">登録</button>
+</form>
+
+<a href="{% url 'careapp:login' %}">ログインへ</a>
+{% endblock %} {% endcomment %}

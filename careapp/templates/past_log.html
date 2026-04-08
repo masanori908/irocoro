@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}irocoro | 過去の記録入力{% endblock %}
+{% block body_class %}past-log-page{% endblock %}
+
+{% block contents %}
+<main class="main-centered">
+
+  <div class="card main-card centered-card">
+    <h2>📅 {{ target_date }} の記録</h2>
+
+    {% if error %}
+      <p style="color:red;">{{ error }}</p>
+    {% endif %}
+
+    {% if not start_log %}
+    <!-- 朝の記録フォーム -->
+    <p class="subtitle">☀️ この日の朝の記録を入力してください</p>
+    <form method="POST">
+      {% csrf_token %}
+
+      <label for="mood">💭 その日の気分</label>
+      <select id="mood" name="mood" required>
+        <option value="">気分を選択してください</option>
+        {% for m in moods %}
+          <option value="{{ m.mood_name }}">{{ m.emoji }} {{ m.mood_name }}</option>
+        {% endfor %}
+      </select>
+
+      <label for="intensity">📊 気分の度合い</label>
+      <div class="range-row">
+        <span>弱い</span>
+        <input type="range" id="intensity" name="intensity" min="0" max="100" value="50">
+        <span>強い</span>
+      </div>
+
+      <label for="comment">✏️ 一言コメント（任意）</label>
+      <textarea id="comment" name="comment" placeholder="その日の気持ちを書いてね！"></textarea>
+
+      <button type="submit" class="submit-btn">朝の記録を保存して次へ →</button>
+    </form>
+
+    {% else %}
+    <!-- 朝の記録サマリー -->
+    <div style="background:#F4F4E8; border-radius:12px; padding:15px; margin-bottom:24px; text-align:left;">
+      <strong>☀️ 朝の記録</strong><br>
+      気分：{{ start_log.mood.emoji }} {{ start_log.mood.mood_name }}<br>
+      {% if start_log.startlog_note %}コメント：{{ start_log.startlog_note }}{% endif %}
+    </div>
+
+    <!-- 夜の記録フォーム -->
+    <p class="subtitle">🌙 この日の夜の記録を入力してください</p>
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <label>🎨 身に着けた色を選択してね！</label>
+      <div class="color-list">
+        {% for color in suggested_colors %}
+          <div class="color-item">
+            <label>
+              <input class="color-radio" type="radio" name="selected_color" value="{{ color.suggested_color_id }}">
+              <div class="color-box" style="background-color: {{ color.suggested_color_hsl }};" onclick="selectColor(this)"></div>
+            </label>
+          </div>
+        {% endfor %}
+      </div>
+
+      <label class="color-option">
+        <input type="radio" name="selected_color" value="other"> その他の色
+      </label>
+      <div id="other-color-box" style="display:none;">
+        <input type="color" name="other_color_hex" value="#cccccc">
+        <span>カラーパレットから選択</span>
+      </div>
+
+      <label>💭 夜の気分</label>
+      <select name="mood" required>
+        {% for m in moods %}
+          <option value="{{ m.mood_id }}">{{ m.emoji }} {{ m.mood_name }}</option>
+        {% endfor %}
+      </select>
+
+      <label>📷 写真（任意）</label>
+      <input type="file" name="photo" accept="image/*">
+
+      <label>✏️ 振り返りコメント（任意）</label>
+      <textarea name="endlog_note" placeholder="その日の出来事や気分を書いてね！"></textarea>
+
+      <button type="submit" class="submit-btn">記録を保存</button>
+    </form>
+    {% endif %}
+
+  </div>
+
+  <div style="margin-top:16px;">
+    <a href="{% url 'careapp:calendar' %}" class="btn-link">🗓️ カレンダーへ戻る</a>
+  </div>
+
+</main>
+
+<script>
+function selectColor(el) {
+  const otherRadio = document.querySelector("input[name='selected_color'][value='other']");
+  if (otherRadio) otherRadio.checked = false;
+  document.querySelectorAll('.color-box').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  el.previousElementSibling.checked = true;
+  document.getElementById("other-color-box").style.display = "none";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const radios = document.querySelectorAll("input[name='selected_color']");
+  const box = document.getElementById("other-color-box");
+  if (!box) return;
+  function toggle() {
+    const checked = document.querySelector("input[name='selected_color']:checked");
+    if (checked && checked.value === "other") {
+      document.querySelectorAll(".color-radio").forEach(r => r.checked = false);
+      document.querySelectorAll(".color-box").forEach(c => c.classList.remove("selected"));
+    }
+    box.style.display = checked && checked.value === "other" ? "block" : "none";
+  }
+  radios.forEach(r => r.addEventListener("change", toggle));
+  toggle();
+});
+</script>
+
+{% endblock contents %}

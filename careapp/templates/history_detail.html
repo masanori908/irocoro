@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block contents %}
+<main class="history-container">
+
+    <h2>📌 {{ date }} の記録</h2>
+
+    <div class="log-group">
+
+    {% if start_log %}
+    <div class="log-card start-log">
+        <h3>☀️ 朝の記録</h3>
+        <p class="mood"><strong>気分：</strong><span>{{ start_log.mood.emoji }} {{ start_log.mood.mood_name }}</span></p>
+        <h4>✏️ コメント</h4>
+        <div class="history-comment-display">{{ start_log.startlog_note|default:"未入力です。" }}</div>
+        {% comment %} <textarea readonly class="note">{{ start_log.startlog_note|default:"未入力です。" }}</textarea> {% endcomment %}
+
+        <div class="color-section">
+            <h4>💡 提案カラー</h4>
+            <div class="color-list history-color-list">
+                {% for c in start_colors %}
+                    <div class="color-circle" style="background:{{ c.suggested_color_hsl }};"></div>
+                {% empty %}
+                    <p>提案カラーはありません</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 矢印 -->
+    <div class="arrow">▼</div>
+
+    {% if end_log %}
+    <div class="log-card end-log">
+        <h3>🌙 夜の記録</h3>
+        <p class="mood"><strong>気分：</strong><span>{{ end_log.mood.emoji }} {{ end_log.mood.mood_name }}</span></p>
+        <h4>✏️ コメント</h4>
+        <div class="history-comment-display">
+            {{ end_log.endlog_note|default:"未入力です。" }}</div>
+        {% comment %} <textarea readonly class="note">{{ end_log.endlog_note|default:"未入力です。" }}</textarea> {% endcomment %}
+
+        {% if end_log.selected_color %}
+        <div class="color-section">
+            <h4>🎨 身に着けた色</h4>
+            <div class="color-list">
+                <div class="color-circle" style="background:{{ end_log.selected_color.suggested_color_hsl }};"></div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if end_log.photo %}
+        <div class="photo-section">
+            <h4>📸 写真</h4>
+            <img src="{{ end_log.photo.url }}" alt="今日の写真" class="photo-display">
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    </div>
+
+    {% if not start_log and not end_log %}
+    <p class="no-log">この日の記録はありません。</p>
+    {% endif %}
+
+    {% if start_log and not end_log %}
+    <div class="no-endlog-notice">
+      <p>🌙 終わりの記録がまだ入力されていません。</p>
+      <a href="{% url 'careapp:past_log' date.year date.month date.day %}" class="btn-link">終わりの記録を入力する →</a>
+    </div>
+    {% endif %}
+
+    <a href="{% url 'careapp:calendar' %}" class="btn-link">🗓️ カレンダーへ戻る</a>
+
+</main>
+
+{% endblock contents %}

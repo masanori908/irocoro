@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load static dict_filters %}
+
+{% block title %}irocoro | calendar{% endblock %}
+{% block body_class %}calendar-page{% endblock %}
+
+{% block contents %}
+<main class="calendar-main">
+
+<!-- 年表示 -->
+{% if view_type == "year" %}
+    <div class="calendar-container">
+        <div class="calendar-header">
+            <a class="nav-btn" href="{% url "careapp:calendar" %}">‹ 今日</a>
+            <a class="nav-btn" href="?view=year&year={{ prev_year }}">‹ {{ prev_year }}年</a>
+            <h2>{{ year }}年</h2>
+            <a class="nav-btn" href="?view=year&year={{ next_year }}">{{ next_year }}年 ›</a>
+        </div>
+
+        <div class="month-grid">
+            {% for row in month_rows %}
+            <div class="month-row">
+                {% for m in row %}
+                <div class="mini-calendar-wrapper {% if m == today.month and year == today.year %}current-month{% endif %}">
+                    <a href="?view=month&year={{ year }}&month={{ m }}" class="mini-calendar-link">
+                        <div class="mini-calendar-title">{{ m }}月</div>
+                        <table class="mini-calendar-table">
+                            <tr>
+                                {% for day_name in weekday_names %}
+                                    <th class="week_color {% if day_name == '土' %}saturday{% elif day_name == '日' %}sunday{% endif %}">{{ day_name }}</th>
+                                {% endfor %}
+                            </tr>
+                            {% for week in month_calendars|dict_get:m %}
+                                <tr>
+                                    {% for day in week %}
+                                        <td class="{% if day.month != m %}other-month{% endif %}">
+                                            {% if day == today %}<span class="today-circle">{{ day.day }}</span>{% else %}{{ day.day }}{% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+<!-- 月表示 -->
+{% else %}
+    <div class="calendar-container">
+        <div class="calendar-header">
+            <a class="nav-btn" href="{% url "careapp:calendar" %}">‹ 今日</a>
+            <a class="nav-btn" href="?view=year&year={{ year }}">‹ {{ year }}年</a>
+            <a class="nav-btn" href="?year={{ prev_year }}&month={{ prev_month }}">‹</a>
+            <h2>{{ month }}月</h2>
+            <a class="nav-btn" href="?year={{ next_year }}&month={{ next_month }}">›</a>
+        </div>
+
+        <table class="calendar">
+            <tr>
+                {% for day_name in weekday_names %}
+                <th class="week_color {% if day_name == '土' %}saturday{% elif day_name == '日' %}sunday{% endif %}">{{ day_name }}</th>
+                {% endfor %}
+            </tr>
+
+            {% for week in weeks %}
+            <tr>
+                {% for day in week %}
+                <td class="day-cell {% if day == today %}today{% endif %} {% if day|date:"Y-m-d" in emoji_map %}has-log{% elif day|date:"Y-m-d" in incomplete_map %}has-startlog{% endif %} {% if day.month != month %}other-month{% endif %}">
+                    {% with day_key=day|date:"Y-m-d" %}
+                        {% if day_key in emoji_map %}
+                            <a href="{% url 'careapp:history_detail' day.year day.month day.day %}" class="day-cell-link">
+                                <div>{{ day.day }}</div>
+                                <div class="emoji">{{ emoji_map|dict_get:day_key }}</div>
+                            </a>
+                        {% elif day_key in incomplete_map %}
+                            <a href="{% url 'careapp:past_log' day.year day.month day.day %}" class="day-cell-link">
+                                <div>{{ day.day }}</div>
+                                <div class="emoji">{{ incomplete_map|dict_get:day_key }}</div>
+                            </a>
+                        {% elif day <= today and day.month == month %}
+                            <a href="{% url 'careapp:past_log' day.year day.month day.day %}" class="day-cell-link">
+                                <div>{{ day.day }}</div>
+                                <div class="emoji"></div>
+                            </a>
+                        {% else %}
+                            <div>{{ day.day }}</div>
+                            <div class="emoji"></div>
+                        {% endif %}
+                    {% endwith %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endif %}
+
+
+</main>
+{% endblock contents %}

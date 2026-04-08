@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}irocoro | graph{% endblock %}
+
+{% block contents %}
+<main class="main-centered {% if view_type == 'year' %}graph-year{% endif %}">
+    {% if view_type == "year" %}
+        <!-- 年表示 -->
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <a class="nav-btn" href="{% url 'careapp:graph' %}">‹ 今月</a>
+                <a class="nav-btn" href="?view=year&year={{ prev_year }}">‹ {{ prev_year }}年</a>
+                <h2>{{ year }}年</h2>
+                <a class="nav-btn" href="?view=year&year={{ next_year }}">{{ next_year }}年 ›</a>
+            </div>
+
+            <div class="month-grid">
+                <div class="month-row">
+                    {% for m in months %}
+                        <div class="mini-calendar-wrapper">
+                            <a class="mini-calendar-link" href="?year={{ year }}&month={{ m }}">
+                                <div class="mini-calendar-title">{{ m }}月</div>
+                            </a>
+                        </div>
+
+                        {% if forloop.counter|divisibleby:4 %}
+                            </div><div class="month-row">
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- 月表示 -->
+        <div class="calendar-header">
+            <a class="nav-btn" href="{% url 'careapp:graph' %}">‹ 今月</a>
+            <a class="nav-btn" href="?view=year&year={{ year }}">‹ {{ year }}年</a>
+            <a class="nav-btn" href="?year={{ prev_year }}&month={{ prev_month }}">‹</a>
+            <h2>{{ month }}月</h2>
+            <a class="nav-btn" href="?year={{ next_year }}&month={{ next_month }}">›</a>
+        </div>
+
+        <div class="card main-card graph-card">
+            <canvas id="moodChart"></canvas>
+        </div>
+    {% endif %}
+</main>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const dates = {{ dates|safe }};
+const moodValues = {{ mood_values|safe }};
+const moodLabels = {{ mood_labels|safe }};
+
+Chart.defaults.font.family = '"Zen Maru Gothic", sans-serif';
+Chart.defaults.font.size = 14;
+
+const ctx = document.getElementById('moodChart').getContext('2d');
+
+const moodChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: dates,
+        datasets: [{
+            label: '気分',
+            data: moodValues,
+            borderColor: 'rgba(75, 192, 192, 1)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            fill: false,
+            tension: 0.4,
+            spanGaps: true
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return moodLabels[context.raw];
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                type: 'category',
+                labels: moodLabels,
+                title: { display: true, text: '気分' },
+            },
+            x: {
+                title: { display: true, text: '日' },
+                ticks: { precision: 0 }
+            }
+        }
+    }
+});
+
+window.addEventListener('resize', () => {
+    moodChart.resize();
+});
+</script>
+
+<style>
+    {% comment %} /* 年表示用小カレンダー */
+    .month-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    .month-row {
+        display: flex;
+        gap: 10px;
+        justify-content: space-between;
+    }
+
+    .mini-calendar-link {
+        text-decoration: none;
+        color: inherit;
+        flex: 1; /* 行内で均等幅に */
+    }
+
+    .mini-calendar-wrapper {
+        flex: 1;
+        background-color: #FFF3E0;
+        border-radius: 10px;
+        padding: 5px;
+    }
+
+    .mini-calendar-title {
+        text-align: center;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .mini-calendar-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.7rem;
+    }
+
+    .mini-calendar-table th, .mini-calendar-table td {
+        text-align: center;
+        padding: 2px;
+    }
+
+    .other-month {
+        color: #c7c7c7ff;
+    }
+
+    /* 月表示カレンダー */
+    .calendar-container {
+        width: 85%;
+        margin: 0 auto;
+    }
+
+    .calendar-header {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        width: 85%;
+        margin: 0 auto 20px auto;
+        padding: 10px 0;
+    }
+
+    .calendar-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+    }
+
+    .nav-btn {
+        font-size: 1.5rem;
+        text-decoration: none;
+        color: #4F4F4F;
+        padding: 5px 15px;
+    }
+
+    .nav-btn:hover {
+        transform: scale(1.3);
+    }
+
+    .calendar {
+        width: 100%;         /* 親コンテナに合わせる */
+        border-collapse: separate;
+        border-spacing: 5px;
+        text-align: center;
+        font-family: "Zen Maru Gothic", "Hiragino Sans", "Noto Sans JP", sans-serif;
+        margin: 0 auto;
+    }
+
+    .calendar th {
+        background-color: #FDEBD0;
+        padding: 10px;
+        border-radius: 10px;
+    }
+
+    .calendar td {
+        background-color: #FFF3E0;
+        padding: 10px;
+        border-radius: 10px;
+        vertical-align: top;
+        height: 80px;
+        width: 14.28%;
+        box-sizing: border-box;
+    }
+
+    .calendar td:hover {
+        transform: scale(1.05);
+        background-color: #FFE0B2;
+    }
+
+    .day-cell div {
+        margin: 5px 0;
+    }
+
+    .emoji {
+        font-size: 1.8rem;
+    }
+
+    .today {
+        border: 2px solid #F8C471;
+        background-color: #FFF9F0;
+    }
+
+    .has-log {
+        background-color: #D6EAF8;
+        border: 1px solid #85C1E9;
+    }
+
+    .calendar a {
+        display: block; color: inherit; text-decoration: none;
+    }
+
+    .week_color {
+        color: #6E2C00;
+    }
+
+    .saturday {
+        color: #4eadf6ff;
+    }
+
+    .sunday {
+        color: #ff0000ff;
+    } {% endcomment %}
+</style>
+
+{% endblock contents %}

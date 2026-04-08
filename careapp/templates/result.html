@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block contents %}
+<main class="main-centered">
+
+  <div class="card main-card centered-card">
+    <h2>✅ 今日の記録が完了しました</h2>
+    <p class="subtitle">💡 今日の終わりの記録を振り返ります</p>
+
+    {% if end_log %}
+      <!-- 選択した色 -->
+      <div class="section">
+        <h3>🎨 今日身に着けた色</h3>
+        <div class="color-display" style="background-color: {{ end_log.selected_color.suggested_color_hsl }};"></div>
+      </div>
+
+      <!-- 終わりの気分 -->
+      <div class="section">
+        <h3>💭 今日の終わりの気分</h3>
+        <p class="mood-display">{{ end_log.mood.emoji }} {{ end_log.mood.mood_name }}</p>
+      </div>
+
+      <!-- コメント -->
+      <div class="section">
+        <h3>✏️ コメント</h3>
+        <div class="comment-display">
+        <div class="main-comment-box">
+          {{ end_log.endlog_note|default:"未入力です。"|linebreaksbr }}
+        </div>
+        </div>
+      </div>
+
+      {% comment %} <div class="section">
+        <h3>✏️ コメント</h3>
+        <textarea readonly style="line-height: 1.5;">{{ end_log.endlog_note|default:"未入力です。" }}</textarea>
+      </div> {% endcomment %}
+
+      <!-- 写真 -->
+      {% if end_log.photo %}
+      <div class="section">
+        <h3>📷 アップロードした写真</h3>
+        <img src="{{ end_log.photo.url }}" alt="今日の写真" class="photo-display">
+      </div>
+      {% endif %}
+
+    {% else %}
+      <p>記録データが見つかりません。</p>
+    {% endif %}
+
+  </div>
+
+  <!-- トップページリンク -->
+  <div class="section">
+    <a href="{% url 'careapp:index' %}" class="btn-link">🏠 トップページへ戻る</a>
+  </div>
+
+</main>
+
+{% endblock contents %}

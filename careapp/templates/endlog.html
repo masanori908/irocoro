@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block contents %}
+<main class="main-centered">
+
+  <div class="card main-card centered-card">
+    <h2>🌙 今日の終わりの記録</h2>
+    <p class="subtitle">💡 今日の振り返りや身に着けた色を記録しましょう</p>
+
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <!-- 色が未選択の場合：エラーメッセージ -->
+      {% if error %}
+        <p style="color:red;">{{ error }}</p>
+      {% endif %}
+
+      <!-- 今日身に着けた色 -->
+      <label class="section-title">🎨 今日身に着けた色をクリックして選択してね！</label>
+      <div class="color-list">
+        {% for color in suggested_colors %}
+          <div class="color-item">
+            <label>
+              <input
+                class="color-radio"
+                type="radio" name="selected_color"
+                value="{{ color.suggested_color_id }}"
+              >
+              <div class="color-box" style="background-color: {{ color.suggested_color_hsl }};" onclick="selectColor(this)"></div>
+            </label>
+          </div>
+        {% endfor %}
+      </div>
+
+      <label class="color-option">
+        <input
+          type="radio"
+          name="selected_color"
+          value="other"
+          {% if prev_color_id == "other" %}
+            checked
+          {% endif %}
+        >
+        その他の色
+      </label>
+
+      <div id="other-color-box" style="display:none;">
+        <input
+          type="color"
+          name="other_color_hex"
+          value="{{ prev_other_color|default:'#cccccc' }}"
+        >
+        <span>カラーパレットから選択</span>
+      </div>
+
+      <!-- 気分選択 -->
+      <label class="section-title">💭 今日の終わりの気分</label>
+      <select name="mood" required>
+        {% for mood in moods %}
+          <option
+            value="{{ mood.mood_id }}"
+            {% if prev_mood_id|stringformat:"s" == mood.mood_id|stringformat:"s" %}
+              selected
+            {% endif %}
+          >
+            {{ mood.emoji }} {{ mood.mood_name }}
+          </option>
+        {% endfor %}
+
+      </select>
+
+      <!-- 写真アップロード -->
+      <label class="section-title">📷 写真をアップロード</label>
+      <input type="file" name="photo" accept="image/*">
+
+      <!-- コメント欄 -->
+      <label class="section-title">✏️ 今日の振り返りコメント</label>
+      <textarea name="endlog_note" rows="4" placeholder="今日の出来事や気分を自由に書いてね！">{{ prev_note|default_if_none:"" }}</textarea>
+
+      <!-- 送信ボタン -->
+      <button type="submit" class="submit-btn">記録を保存</button>
+
+    </form>
+
+  </div>
+
+</main>
+
+<script>
+function selectColor(el) {
+  // ★ 追加：other の radio を解除
+  const otherRadio = document.querySelector("input[name='selected_color'][value='other']");
+  if (otherRadio) otherRadio.checked = false;
+
+  document.querySelectorAll('.color-box').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  el.previousElementSibling.checked = true;
+
+  document.getElementById("other-color-box").style.display = "none";
+}
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const radios = document.querySelectorAll("input[name='selected_color']");
+  const box = document.getElementById("other-color-box");
+
+  function toggle() {
+    const checked = document.querySelector("input[name='selected_color']:checked");
+
+    if (checked && checked.value === "other") {
+      document.querySelectorAll(".color-radio").forEach(r => r.checked = false);
+      document.querySelectorAll(".color-box").forEach(c => c.classList.remove("selected"));
+    }
+
+    box.style.display = checked && checked.value === "other" ? "block" : "none";
+  }
+
+  radios.forEach(r => r.addEventListener("change", toggle));
+  toggle();
+});
+</script>
+
+
+{% endblock contents %}

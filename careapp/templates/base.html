@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}irocoro{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="icon" href="{% static 'icons/favicon.png' %}">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <header>
+    <h1 class="login-title">
+      <a href="{% url 'careapp:index' %}">
+        irocoro
+      </a>
+    </h1>
+
+    <!-- ハンバーガーボタン（スマホのみ表示） -->
+    <button class="hamburger" id="hamburgerBtn" aria-label="メニュー">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="nav-links" id="navLinks">
+      {% if user.is_authenticated %}
+        <div class="user-name">こんにちは {{ user.username }} さん</div>
+        <a href="{% url 'careapp:index' %}">トップページ</a>
+        <a href="{% url "careapp:calendar" %}">カレンダー</a>
+        <a href="{% url "careapp:graph" %}">グラフ</a>
+        <form method="post" class="logout-form" action="{% url 'careapp:logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="logout-link"><i class="fa-solid fa-right-from-bracket"></i>ログアウト</button>
+        </form>
+      {% else %}
+        <a href="{% url 'careapp:login' %}"><i class="fa-solid fa-right-to-bracket"></i>ログイン</a>
+        <a href="{% url 'careapp:signup' %}"><i class="fa-solid fa-user-plus"></i>新規登録</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  <script>
+    const btn = document.getElementById('hamburgerBtn');
+    const nav = document.getElementById('navLinks');
+    btn.addEventListener('click', () => {
+      nav.classList.toggle('nav-open');
+      btn.classList.toggle('is-open');
+    });
+  </script>
+
+  {% block contents %}{% endblock contents %}
+
+</body>
+</html>

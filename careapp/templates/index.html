@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}irocoro | top{% endblock title %}
+{% block contents %}
+<main>
+  <!-- 左カラム -->
+  <div class="side left">
+    <!-- 直近3日間の気分 -->
+    <div class="card">
+      <h2>🗓️ 最近の気分</h2>
+      {% for three_days_startlog in three_days_startlogs  %}
+        {% if three_days_startlog.log %}
+          <div class="mood-row">
+            <span><strong>{{ three_days_startlog.date|date:"m月d日" }}</strong></span>
+            <span>{{ three_days_startlog.log.mood.emoji }} {{ three_days_startlog.log.mood.mood_name }}</span>
+          </div>
+        {% else %}
+          <div class="mood-row">
+            <span><strong>{{ three_days_startlog.date|date:"m月d日" }}</strong></span>
+            <span>-</span>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <div class="card">
+      <h2>🌈 今週の色</h2>
+      <ul class="record-list">
+        {% for d in week_data %}
+          <li>
+            <span><strong>{{ d.weekday }}</strong></span>
+            {% if d.log == "-" %}
+              <span class="none">-</span>
+            {% else %}
+              <span class="dot" style="background:{{ d.log.selected_color.suggested_color_hsl }};"></span>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <!-- 中央カラム -->
+  <div class="main-content">
+    <div class="card main-card">
+
+      <!-- 既にエンドログが入力されている場合 -->
+      {% if has_today_endlog %}
+      <h2>🌅 今日の変化まとめ</h2>
+      <p class="subtitle">🌗 朝と夜の記録を比較しました</p>
+
+      <div class="compare-container">
+
+        <!-- 比較用スタートログ -->
+        <div class="compare-card">
+          <h3>☀️ 朝（スタート）</h3>
+          <p><strong>💡 提案カラー</strong></p>
+          <div style="display:flex; justify-content:center; gap:20px; margin:10px 0;">
+            {% for color in start_colors %}
+            <div style="width:80px; height:80px; border-radius:50%; background:{{ color }};"></div>
+            {% endfor %}
+          </div>
+          <p><strong>気分：</strong> {{ start_mood.emoji }} {{ start_mood.mood_name }}</p>
+          <p class="comment-label"><strong>✏️ コメント</strong></p>
+          <div class="comment-display compare-comment">
+            {{ start_comment|default:"未入力"|linebreaksbr }}</div>
+          {% comment %} <textarea readonly>{{ start_comment|default:"未入力" }}</textarea> {% endcomment %}
+        </div>
+
+        <!-- 矢印 -->
+        <div class="arrow">▼</div>
+
+        <!-- 比較用エンドログ -->
+        <div class="compare-card">
+          <h3>🌙 夜（エンド）</h3>
+          <p><strong>🎨 身に着けた色</strong></p>
+          <div style="display:flex; justify-content:center; gap:20px; margin:10px 0;">
+            {% if end_selected_color %}
+              <div style="width:80px; height:80px; border-radius:50%; background: {{ end_selected_color.suggested_color_hsl }};"></div>
+            {% else %}
+              <div style="background: #ddd;"></div>
+            {% endif %}
+          </div>
+          <p><strong>気分：</strong> {{ end_mood.emoji }} {{ end_mood.mood_name }}</p>
+          <p class="comment-label"><strong>✏️ コメント</strong></p>
+          <div class="comment-display compare-comment">
+            {{ end_comment|default:"未入力"|linebreaksbr }}</div>
+          {% comment %} <textarea readonly>{{ end_comment|default:"未入力" }}</textarea> {% endcomment %}
+        </div>
+      </div>
+
+      <!--
+        エンドログが入力されていない場合
+        スタートログ入力・未入力の分岐へ
+      -->
+      {% else %}
+      <!-- 既にスタートログが入力されている場合 -->
+        {% if has_today_startlog %}
+        <!-- 色提案の表示 -->
+        <h2>🌈 今日のおすすめカラー</h2>
+        <p class="subtitle">今のあなたにそっと寄り添うおすすめの色たちです！</p>
+
+        <div style="display:flex; gap:40px; justify-content:center; margin:20px 0;">
+          {% for c in colors_with_names %}
+            <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+              <div style="width:100px; height:100px; border-radius:50%; background:{{ c.hsl }};"></div>
+              <span style="font-size:0.85rem; color:#4F4F4F;">{{ c.name }}</span>
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- 入力内容の表示 -->
+        <div class="result-info">
+          <p class="mood-display">
+          <strong>今日の気分：</strong> {{ mood.emoji }} {{ mood.mood_name }}
+          </p>
+
+          <p><strong>✏️ 今の気持ちを一言</strong></p>
+          <div class="main-comment-box">
+          <div class="result-comment-display">
+            {{ comment|default:"未入力"|linebreaksbr }}</div>
+          </div>
+
+          <p><strong>🎨 提案カラーの効果</strong></p>
+          <div class="main-advice-box">
+          {% if color_descriptions %}
+            {% for cd in color_descriptions %}
+            <div class="result-comment-display">
+              <strong>{{ cd.color_name }}</strong>
+              {% if cd.description %}<br>{{ cd.description|linebreaksbr }}{% endif %}
+            </div>
+            {% endfor %}
+          {% else %}
+          <div class="result-comment-display default-advice">
+          色の解説はまだ登録されていません。
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- 結果入力画面遷移ボタン -->
+        <form method="get" action="{% url 'careapp:endlog' %}">
+          {% csrf_token %}
+          <button type="submit" class="submit-btn" name="result" value="1" class="btn btn-warning">
+            一日の記録を入力
+          </button>
+        </form>
+
+        <!-- 入力をやり直す -->
+        <form method="post">
+          {% csrf_token %}
+          <button type="submit" class="reset-link" name="reset" value="1">
+            気分の変更
+          </button>
+        </form>
+
+        <!-- スタートログが入力されていない場合 -->
+        {% else %}
+        <!-- 入力フォームの表示 -->
+        <h2>🌱 今の気分を教えてください</h2>
+        <p class="subtitle">あなたの気分に合わせて、おすすめの色を提案します！</p>
+
+        <form method="POST">
+          {% csrf_token %}
+
+          <!-- 気分の入力 -->
+          <label for="mood">💭 現在の気分</label>
+          <select id="mood" name="mood" required>
+            <option value="">今の気分を選択してください</option>
+            {% for mood in moods %}
+            <option value="{{ mood.mood_name }}"
+              {% if prev_mood == mood.mood_name %}
+                selected
+              {% endif %}
+            >
+              {{ mood.emoji }} {{ mood.mood_name }}
+            </option>
+            {% endfor %}
+            </select>
+
+          <!-- 気分の強度入力 -->
+          <label for="intensity">📊 気分の度合い</label>
+          <div class="range-row">
+            <span>弱い</span>
+            <input
+              type="range"
+              id="intensity"
+              name="intensity"
+              min="0"
+              max="100"
+              value="{{ prev_intensity|default:50 }}"
+              >
+            <span>強い</span>
+          </div>
+
+          <!-- コメント入力 -->
+          <label for="comment">✏️ 今の気持ちを一言（任意）</label>
+          <textarea
+          id="comment"
+          name="comment"
+          placeholder="今の気持ちを教えてね！"
+          >{{ prev_comment|default_if_none:"" }}</textarea>
+
+          <button type="submit" class="submit-btn">色を提案！</button>
+        </form>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+  </div>
+
+  <!-- 右カラム -->
+  <div class="side right">
+
+    <!-- 今月の振り返り -->
+    <div class="card">
+      <div class="month-summary">
+        <h2>📚 今月の振り返り</h2>
+        <p>
+          <strong>今月最も多い気分</strong><br>
+          {% if month_main_mood %}
+            {{ month_main_mood.mood__emoji }} {{ month_main_mood.mood__mood_name }}
+          {% else %}
+            今月の記録はまだありません。
+          {% endif %}
+        </p>
+        <p>
+          <strong>今月のログ数</strong><br>
+          {{ month_log_days }} 件
+        </p>
+        <p>
+          <strong>今月のまとめ</strong><br>
+          {% if month_summary_text %}
+            {{ month_summary_text }}
+          {% else %}
+            まだ入力がありません。
+          {% endif %}
+        </p>
+      </div>
+    </div>
+
+    <!-- 気分の傾向 -->
+    <div class="card">
+      <h2>📈 今月の気分</h2>
+      <div class="month-flow">
+        <span><strong>前半</strong></span>
+        <span>{{ month_flow.early }}</span>
+      </div>
+      <div class="month-flow">
+        <span><strong>中盤</strong></span>
+        <span>{{ month_flow.middle }}</span>
+      </div>
+      <div class="month-flow">
+        <span><strong>終盤</strong></span>
+        <span>{{ month_flow.late }}</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+{% endblock contents %}
