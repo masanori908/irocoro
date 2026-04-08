@@ -28,3 +28,6 @@ staticfiles/
 
 # claudeファイル
 .claude/
+
+# フィクスチャ（個人データを含む可能性があるため）
+data.json
