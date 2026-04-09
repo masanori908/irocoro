@@ -5,6 +5,10 @@
 URL  
 https://irocoro.onrender.com/
 
+以下のアカウントでログインして動作確認が可能です。
+ユーザー名: demo_user  
+パスワード: Demo1234  
+
 ---
 
 ## 概要
@@ -62,9 +66,23 @@ irocoroは、ユーザーの「気分」を入力することで、
 
 ---
 
-## スクリーンショット
+## 画面イメージ
 
-※ここにアプリの画面キャプチャを追加してください  
-（例：トップ画面 / 入力画面 / グラフ画面）
+### 入力画面
+<p align="center">
+  <img alt="irocoro_入力" src="https://github.com/user-attachments/assets/fa0c5b1d-6fb9-401c-a5f1-58b2b90ed94f" width="60%">
+</p>
+
+### 色提案画面
+<p align="center">
+  <img alt="irocoro_色提案(上)" src="https://github.com/user-attachments/assets/5555b38c-bc1a-4f15-8020-9469f3090068" width="45%">
+  <img alt="irocoro_色提案(下)" src="https://github.com/user-attachments/assets/1c8c7666-ce3d-4c31-97a8-d3d2b2c2e3ec" width="45%">
+</p>
+
+### 履歴・可視化機能
+<p align="center">
+  <img alt="irocoro_カレンダー" src="https://github.com/user-attachments/assets/cb397188-00e2-4729-aa1b-764ddf65149f" width="45%">
+  <img alt="irocoro_グラフ" src="https://github.com/user-attachments/assets/d57eba11-7dd1-409e-83fc-79b9645e6cea" width="45%">
+</p>  
 
 ---
